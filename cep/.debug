@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Enables Chrome DevTools against the panel, which is the only reliable way to
+  reload changed JS without restarting Premiere, and the only way to see a real
+  console when something in panel.js throws.
+
+  Open http://localhost:8088 in Chrome while the panel is open, click the panel
+  entry, then Ctrl+R to reload it.
+
+  Port 8088 because 8860 and 8861 are already taken by Phantom, Echoe Scribe and
+  AutoCut on this machine.
+-->
+<ExtensionList>
+  <Extension Id="com.counterpoint.switcher.panel">
+    <HostList>
+      <Host Name="PPRO" Port="8088"/>
+    </HostList>
+  </Extension>
+</ExtensionList>

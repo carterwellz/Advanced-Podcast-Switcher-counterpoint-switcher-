@@ -1,0 +1,264 @@
+:root {
+  --bg: #1e1e1e;
+  --panel: #262626;
+  --panel-2: #2e2e2e;
+  --line: #3a3a3a;
+  --line-soft: #333;
+  --text: #d6d6d6;
+  --text-dim: #8e8e8e;
+  --text-faint: #6a6a6a;
+  --accent: #4a9eff;
+  --accent-dim: #2d6bb0;
+  --good: #3fbf7f;
+  --warn: #e0a33e;
+  --bad: #e05c5c;
+  --side-a: #4a9eff;
+  --side-b: #e07c4a;
+  --host: #9b7fd4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/*
+ * Sized for a docked Premiere panel, where every row of chrome is a row of timeline
+ * the editor does not get. Density is the feature here: this lives beside a
+ * sequence, not on its own page.
+ */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1.35 "Segoe UI", system-ui, sans-serif;
+  padding: 7px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+h1 { font-size: 12px; font-weight: 600; letter-spacing: .2px; }
+
+/* ---------- layout ---------- */
+
+.topbar {
+  display: flex; align-items: center; gap: 6px;
+  padding-bottom: 6px; margin-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+}
+.topbar .grow { flex: 1; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.card > header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+.card > header .title {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .6px; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.card > header .grow { flex: 1; }
+.card > header .chevron { color: var(--text-faint); font-size: 10px; transition: transform .12s; }
+.card.collapsed > header .chevron { transform: rotate(-90deg); }
+.card.collapsed > .body { display: none; }
+.card > .body { padding: 7px 8px; }
+
+.hint { color: var(--text-faint); font-size: 10px; line-height: 1.4; margin-bottom: 6px; }
+
+/* ---------- controls ---------- */
+
+button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 5px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #383838; border-color: #4a4a4a; }
+button:disabled { opacity: .4; cursor: default; }
+button.primary {
+  background: var(--accent-dim); border-color: var(--accent);
+  color: #fff; font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: var(--accent); }
+button.sm { padding: 3px 7px; font-size: 11px; }
+
+input[type=text], input[type=number], select {
+  background: #1a1a1a;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 5px;
+  font: inherit;
+  width: 100%;
+  min-width: 0;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 18px; background: transparent;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 3px; background: var(--line); border-radius: 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4.5px;
+  background: var(--accent); border-radius: 50%; cursor: pointer;
+}
+
+label.check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+label.check input { width: auto; }
+
+/* ---------- roster tables ---------- */
+
+.row {
+  display: grid; align-items: center; gap: 5px;
+  padding: 2px 0;
+}
+.row.speaker { grid-template-columns: 26px minmax(0, 1fr) 88px; }
+/* The camera name is a label, not an essay. Capping it leaves the panel usable at
+   Premiere widths instead of one field eating eight hundred pixels. */
+.row.angle-head { grid-template-columns: 26px minmax(0, 1fr) 74px 104px 56px; }
+.row.angle-head input[type=text] { max-width: 320px; }
+
+.tag {
+  display: inline-block; font-size: 10px; padding: 1px 4px;
+  border-radius: 2px; background: #333; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; font-weight: 600;
+  text-align: center;
+}
+
+.angle {
+  border: 1px solid var(--line-soft); border-radius: 3px;
+  padding: 4px 6px; margin-bottom: 4px;
+}
+.angle.empty { opacity: .5; }
+
+.colhead {
+  padding: 0 6px 2px;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-faint);
+}
+
+input:disabled {
+  background: #1f1f1f; color: var(--text-faint);
+  border-style: dashed; cursor: not-allowed;
+}
+
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: 3px; }
+.chip {
+  font-size: 10px; line-height: 1.35; padding: 0 6px; border-radius: 9px;
+  border: 1px solid var(--line); background: transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity .1s;
+}
+.chip:hover { opacity: 1 !important; }
+.chip.on { font-weight: 600; }
+
+.tally {
+  margin-left: auto; font-size: 9px; color: var(--text-faint);
+  font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 6px;
+}
+
+.locked {
+  font-size: 9px; color: var(--warn); margin-top: 2px;
+  padding-left: 2px; opacity: .85;
+}
+
+.maths {
+  font-size: 9px; color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px; padding-top: 5px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.chipbtn {
+  font-size: 9px; padding: 0 5px; border-radius: 9px; cursor: pointer;
+  border: 1px dashed var(--line); color: var(--text-faint);
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.chipbtn:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ---------- settings ---------- */
+
+.setting { display: grid; grid-template-columns: minmax(0, 1fr) 120px 52px; gap: 7px; align-items: center; padding: 3px 0; }
+.setting .label { font-size: 11px; }
+.setting .label small { display: block; color: var(--text-faint); font-size: 10px; line-height: 1.3; }
+.setting .val {
+  text-align: right; font-variant-numeric: tabular-nums;
+  color: var(--accent); font-size: 11px;
+}
+
+/* Typed number, for the few settings an editor wants to state exactly rather than
+   drag toward. Sits in the same 130px column a slider would occupy. */
+.numwrap { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.setting input.num {
+  width: 68px; padding: 3px 6px; text-align: right;
+  font-variant-numeric: tabular-nums; font-size: 11px;
+  background: var(--input-bg, #1e1e1e); color: var(--accent);
+  border: 1px solid var(--border, #3a3a3a); border-radius: 3px;
+}
+.setting input.num:focus { outline: none; border-color: var(--accent); }
+.numwrap .unit { color: var(--text-faint); font-size: 10px; }
+
+.subhead {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-faint); margin: 12px 0 4px; padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+.subhead:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+/* ---------- balance readout ---------- */
+
+.bal {
+  display: grid; grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr) 108px;
+  gap: 8px; align-items: center; padding: 3px 0; font-size: 11px;
+}
+.bar { height: 7px; background: #1a1a1a; border-radius: 2px; overflow: hidden; position: relative; }
+.bar > span { display: block; height: 100%; }
+.bar.talk > span { background: var(--text-dim); }
+.bar.screen > span { background: var(--accent); }
+.bar em { position: absolute; right: 3px; top: -4px; font-size: 9px; font-style: normal; color: var(--text-faint); }
+.bal .subtle { font-size: 9px; color: var(--text-faint); text-align: right; white-space: nowrap; }
+
+/* ---------- status ---------- */
+
+#status {
+  font-size: 11px; padding: 6px 8px; border-radius: 3px;
+  background: #1a1a1a; border: 1px solid var(--line);
+  min-height: 26px; white-space: pre-wrap; word-break: break-word;
+  max-height: 140px; overflow-y: auto;
+}
+#status.err { border-color: var(--bad); color: #ffb0b0; }
+#status.ok { border-color: var(--good); }
+
+.warnlist { margin-top: 6px; font-size: 11px; color: var(--warn); }
+.warnlist div { padding: 1px 0; }
+
+/* ---------- filler word review ---------- */
+
+.filler-row {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 5px 4px; border-bottom: 1px solid var(--line-soft);
+}
+.filler-row:last-child { border-bottom: none; }
+.filler-row input[type=checkbox] { margin-top: 2px; width: auto; }
+.filler-row .filler-main { flex: 1; min-width: 0; }
+.filler-row .filler-head {
+  display: flex; align-items: center; gap: 6px; font-size: 11px; margin-bottom: 2px;
+}
+.filler-row .filler-text { font-weight: 600; color: var(--accent); }
+.filler-row .filler-context {
+  font-size: 10px; color: var(--text-faint); line-height: 1.4;
+}
+.filler-row .filler-context b { color: var(--text-dim); font-weight: 600; font-style: normal; }
+
+.actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.actions button { flex: 1; }

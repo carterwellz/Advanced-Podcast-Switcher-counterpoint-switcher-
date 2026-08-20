@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Counterpoint Switcher</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <h1>Counterpoint Switcher</h1>
+    <span class="grow"></span>
+    <span id="seqLabel" class="tag">no sequence</span>
+    <button id="btnRefresh" class="sm" title="Re-read the sequence, in and out points and track list. Your names, sides and camera tagging are kept.">Refresh</button>
+    <button id="btnRebuild" class="sm" title="Throw away the current roster and re-detect every speaker and camera from the sequence. Use when you have moved to a completely different show.">Rebuild</button>
+  </div>
+
+  <!-- Templates -->
+  <section class="card" id="cardTemplates">
+    <header><span class="title">Template</span><span class="grow"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="row" style="grid-template-columns:1fr auto auto auto auto;">
+        <select id="templateSelect"><option value="">(unsaved setup)</option></select>
+        <button id="btnTplSave" class="sm">Save</button>
+        <button id="btnTplSaveAs" class="sm">Save as</button>
+        <button id="btnTplDup" class="sm">Duplicate</button>
+        <button id="btnTplDelete" class="sm">Delete</button>
+      </div>
+      <label class="check" style="margin-top:6px;">
+        <input type="checkbox" id="tplIncludeSettings">
+        <span>Include settings in this template</span>
+      </label>
+      <div class="hint" style="margin:5px 0 0;">
+        A template saves the roster: names, mic assignments, sides, camera mapping, shot types, cam ids and target shares.
+        Loading onto a different track count reconciles what it can and flags the rest.
+        <b>Settings are normally left alone</b>, so Set the look and Advanced persist across templates,
+        projects and restarts while you dial them in. Tick the box above to pin the current settings
+        to a template as well, and loading it will then apply them.
+      </div>
+    </div>
+  </section>
+
+  <!-- Range -->
+  <section class="card" id="cardRange">
+    <header><span class="title">Range</span><span class="grow"></span><span id="rangeLabel" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <label class="check"><input type="checkbox" id="useInOut" checked> Only cut between the sequence in and out points</label>
+      <div class="hint" style="margin-top:6px;">
+        Everything outside the range is left untouched. Use this when camera assignments
+        change partway through: set in/out, remap, run, then move to the next stretch.
+      </div>
+    </div>
+  </section>
+
+  <!-- Speakers -->
+  <section class="card" id="cardSpeakers">
+    <header><span class="title">Speakers</span><span class="grow"></span><span id="spkCount" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="hint">One row per audio track that has clips. Side drives opposing-side reaction weighting.</div>
+      <div id="speakerList"></div>
+    </div>
+  </section>
+
+  <!-- Cameras -->
+  <section class="card" id="cardAngles">
+    <header><span class="title">Cameras</span><span class="grow"></span><span id="angCount" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="hint">
+        Click a name to toggle whether that person is visible on this camera.
+        <b>Cam id</b> is which physical body the footage came off, detected from the footage folder.
+        Tracks sharing an id never cut against each other, because two crops of one sensor read as a jump cut.
+        It is about the camera, not the side: two separate bodies covering the same side get different ids so they can still cut together.
+        <b>Target %</b> is optional, and auto is fine.
+      </div>
+      <div id="angleList"></div>
+    </div>
+  </section>
+
+  <!-- Quick start: everything needed for a normal episode -->
+  <section class="card" id="cardQuick">
+    <header><span class="title">Set the look</span><span class="grow"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div id="quickSettings"></div>
+    </div>
+  </section>
+
+  <!-- Filler word review: only appears when Trim filler words finds candidates, and
+       gates Preview until Carter has approved or rejected each one. Dead air trim
+       needs no review of its own, since it is pure silence with no wording risk. -->
+  <section class="card collapsed" id="cardFillerReview">
+    <header><span class="title">Filler words found</span><span class="grow"></span><span id="fillerLabel" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="hint">
+        Every candidate below is checked by default. Uncheck anything that is not really disposable
+        before continuing — this is the one place the plugin can remove real dialogue, so nothing here
+        touches the timeline until you say so.
+      </div>
+      <div id="fillerReviewList"></div>
+      <div style="margin-top:10px;">
+        <button id="btnFillerContinue" class="primary">Trim the checked words and continue</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button id="btnPreview">Preview cuts</button>
+    <button id="btnApply" class="primary" disabled>Apply to timeline</button>
+  </div>
+
+  <!-- Everything else, ignorable -->
+  <section class="card collapsed" id="cardAdvanced">
+    <header><span class="title">Advanced</span><span class="grow"></span><span id="advLabel" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="hint">
+        Nothing here needs touching for a normal episode. Changing anything the
+        presets above control switches that preset to Custom.
+      </div>
+      <div class="subhead">Wide shot</div>
+      <div id="wideSettings"></div>
+      <div class="subhead">Reaction shots</div>
+      <div id="reactionSettings"></div>
+      <div class="subhead">Pacing and cuts</div>
+      <div id="pacingSettings"></div>
+      <div class="subhead">Output</div>
+      <div id="outputSettings"></div>
+      <div style="margin-top:12px;">
+        <button id="btnResetAdvanced" class="sm">Reset everything to defaults</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Balance -->
+  <section class="card collapsed" id="cardBalance">
+    <header><span class="title">Speaking balance</span><span class="grow"></span><span id="balLabel" class="tag"></span><span class="chevron">&#9660;</span></header>
+    <div class="body">
+      <div class="hint">
+        <b>Talk</b> is how much of the range this person is talking. Silence and people talking over
+        each other mean it lands near 100% rather than exactly on it.
+        <b>Seen when talking</b> is how much of their own speaking time a camera was actually on them,
+        which is the number that finds someone being missed. Under 80% is amber, under 60% is red.
+        <b>On screen overall</b> is a different measure and deliberately does not add up to 100%:
+        a group shot puts four people on screen at once, so all four are counted for it.
+      </div>
+      <div id="balanceList"></div>
+    </div>
+  </section>
+
+  <div id="status">Open a Counterpoint sequence, then press Refresh.</div>
+  <div id="warnings" class="warnlist"></div>
+
+  <script src="js/CSInterface.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/panel.js"></script>
+</body>
+</html>

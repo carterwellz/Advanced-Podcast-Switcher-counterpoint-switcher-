@@ -1,0 +1,8 @@
+# Secrets. Never commit these.
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+.cache/
