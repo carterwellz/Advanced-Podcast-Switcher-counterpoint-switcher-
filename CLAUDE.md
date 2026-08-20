@@ -496,6 +496,38 @@ word*, not leaving an inaudible fragment of the filler word itself. Both live in
 because the reasoning, and potentially the behaviour, can diverge later (a context-aware
 dead-air pad is a real, named, deliberately deferred follow-up).
 
+## Distribution to a second machine
+
+The repo is private on GitHub at `carterwellz/counterpoint-switcher`, and a second
+editor runs it on his own Windows machine. Two things follow from that.
+
+**Nothing may hardcode a path off this machine.** `src/core/ffmpeg.ts` used to name
+Carter's exact winget install directly, with a bare `'ffmpeg'` first in the candidate
+list. That fallback was never a real check: the loop returned `'ffmpeg'` unconditionally
+whenever nothing else matched, so a machine without ffmpeg installed did not fail in
+`findFfmpeg()` with a message naming ffmpeg, it failed several layers down inside an
+envelope extraction with a raw spawn ENOENT. Resolution is now explicit flag, then
+`CPSW_FFMPEG`, then a real walk of PATH, then a scan of the winget Packages directory
+(the version folder name changes with every build, so it has to be scanned rather than
+named), then scoop/chocolatey/Program Files. `ffprobe` resolves independently rather than
+by string-substituting the ffmpeg path, so a machine with them in different places works.
+The remaining machine-specific paths are in `spikes/` and `test/constraints.test.ts`, and
+both are deliberate: spikes are one-shot probes kept as evidence, and the test suite reads
+real media off `R:` on purpose.
+
+**`install.ps1` is the setup path, and README.md is the front door.** The installer checks
+Node and ffmpeg, runs `npm install` and `npm run build`, sets `PlayerDebugMode` as a
+**string** (CSXS ignores a DWORD) across CSXS 9 through 12, and junctions `cep/` into
+`%APPDATA%\Adobe\CEP\extensions\CounterpointSwitcher`. It is a **junction, not a
+symlink, so it does not need administrator rights**. Removing the link goes through
+`[System.IO.Directory]::Delete($path, $false)` rather than `Remove-Item -Recurse`, which
+can follow the junction and delete the repo behind it. The uninstall path refuses to
+delete anything that is not a link.
+
+`dist/` stays gitignored, so a fresh clone has no engine until `npm run build` runs. That
+is what the installer is for, and it verifies `dist/cli/run-plan.js` actually landed
+rather than trusting npm's exit code.
+
 ## Media quirk that will bite
 
 Auphonic multitrack output is a **folder** named `<something>.wav` containing real mono
